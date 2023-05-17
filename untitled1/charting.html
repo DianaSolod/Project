@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+
+    <h1>MQTT Sensors</h1>
+    <p>Dynamically updated data</p>
+    <canvas id="myChart"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // creating chart
+        // for documentation, different chart types and options check https://www.chartjs.org/docs/latest/charts/line.html
+        const ctx = document.getElementById('myChart');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Temperature',
+                    data: [],
+                    fill: false,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+
+        // receiving data from websocket
+        webSocket = new WebSocket("ws://localhost:8080/testing-websockets");
+        webSocket.onmessage = (event) => {
+            const msg = parseFloat(event.data);
+
+            if (chart.data.datasets[0].data.length > 20) {
+                chart.data.datasets[0].data.shift();
+                chart.data.labels.shift();
+            }
+            chart.data.datasets[0].data.push(msg); // TODO: push new chart data from
+            const currentDate = new Date();
+            chart.data.labels.push(currentDate.toLocaleString().slice(12,20)); // TODO: push some label
+            chart.update();
+        };
+    </script>
+
+</body>
+
+</html>
